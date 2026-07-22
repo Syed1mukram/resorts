@@ -137,7 +137,7 @@ class Renderer:
             "-preset",
             "medium",
 
-            "-crf",
+            "-cq",
             "18",
 
             "-pix_fmt",
@@ -146,7 +146,7 @@ class Renderer:
             "-r",
             "30",
 
-            "-vsync",
+            "-fps_mode",
             "cfr",
 
             "-c:a",
@@ -161,8 +161,7 @@ class Renderer:
             "-movflags",
             "+faststart",
 
-            "-af",
-            "aresample=async=1:first_pts=0",
+            "-shortest",
 
             str(output_file)
 
