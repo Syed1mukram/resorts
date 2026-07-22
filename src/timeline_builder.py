@@ -1,4 +1,4 @@
-from moviepy import AudioFileClip
+from moviepy.audio.io.AudioFileClip import AudioFileClip
 from collections import deque
 
 from config import AUDIO_FILE, IMAGES_DIR
