@@ -106,14 +106,45 @@ class TimelineBuilder:
             if media is None:
                 continue
 
-            timeline.append({
-                "start": start,
-                "end": end,
-                "duration": duration,
-                "text": text,
-                "media": media,
-                "media_type": media_type
-            })
+            if duration > 5:
+
+                mid = start + (duration / 2)
+
+                timeline.append({
+                    "start": start,
+                    "end": mid,
+                    "duration": mid - start,
+                    "text": text,
+                    "media": media,
+                    "media_type": media_type
+                })
+
+                scene = self.scene.analyze(text)
+
+                result = self.matcher.find_best(
+                    prompt=scene["prompt"],
+                    scene=scene["scene"]
+                )
+
+                timeline.append({
+                    "start": mid,
+                    "end": end,
+                    "duration": end - mid,
+                    "text": text,
+                    "media": result["path"],
+                    "media_type": result["type"]
+                })
+
+            else:
+
+                timeline.append({
+                    "start": start,
+                    "end": end,
+                    "duration": duration,
+                    "text": text,
+                    "media": media,
+                    "media_type": media_type
+           })
 
         log(f"Segments : {len(segments)}")
         log(f"Timeline : {len(timeline)}")
