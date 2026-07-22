@@ -121,7 +121,7 @@ class TimelineBuilder:
 
                 scene = self.scene.analyze(text)
 
-                result = self.matcher.find_best(
+                media, media_type = self.matcher.find_best(
                     prompt=scene["prompt"],
                     scene=scene["scene"]
                 )
@@ -131,8 +131,8 @@ class TimelineBuilder:
                     "end": end,
                     "duration": end - mid,
                     "text": text,
-                    "media": result["path"],
-                    "media_type": result["type"]
+                    "media": media,
+                    "media_type": media_type
                 })
 
             else:
