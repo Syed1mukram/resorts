@@ -1,3 +1,4 @@
+from moviepy import AudioFileClip
 from collections import deque
 
 from config import AUDIO_FILE, IMAGES_DIR
@@ -54,7 +55,8 @@ class TimelineBuilder:
 
         max_videos = max(1, int(len(segments) * VIDEO_RATIO))
 
-        transcript_end = float(segments[-1]["end"])
+        with AudioFileClip(str(AUDIO_FILE)) as audio:
+            transcript_end = audio.duration
 
         for i, seg in enumerate(segments):
 
