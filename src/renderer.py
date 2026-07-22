@@ -161,8 +161,6 @@ class Renderer:
             "-movflags",
             "+faststart",
 
-            "-shortest",
-
             str(output_file)
 
         ]
