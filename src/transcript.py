@@ -10,8 +10,8 @@ from config import (
 from src.utils import log
 
 
-MIN_SEGMENT = 2.5
-MAX_SEGMENT = 5.5
+MIN_SEGMENT = 0.3
+MAX_SEGMENT = 4.0
 
 
 class TranscriptGenerator:
