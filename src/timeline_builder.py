@@ -121,10 +121,12 @@ class TimelineBuilder:
 
                 scene = self.scene.analyze(text)
 
-                media, media_type = self.matcher.find_best(
+                media, _ = self.matcher.find_best(
                     prompt=scene["prompt"],
                     scene=scene["scene"]
                 )
+
+                media_type = "image"
 
                 timeline.append({
                     "start": mid,

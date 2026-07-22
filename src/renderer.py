@@ -131,6 +131,9 @@ class Renderer:
 
             "-map",
             "1:a:0",
+
+            "-shortest",
+
             "-c:v",
             "h264_nvenc",
 
