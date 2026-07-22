@@ -47,7 +47,7 @@ class VideoBuilder:
             str(video_path),
 
             "-t",
-            f"{duration:.3f}",
+            f"{duration + 0.05:.3f}",
             "-vf",
             vf,
 

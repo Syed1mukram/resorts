@@ -132,8 +132,6 @@ class Renderer:
             "-map",
             "1:a:0",
 
-            "-shortest",
-
             "-c:v",
             "h264_nvenc",
 
@@ -141,7 +139,7 @@ class Renderer:
             "medium",
 
             "-cq",
-            "18",
+            "22",
 
             "-pix_fmt",
             "yuv420p",
@@ -167,7 +165,8 @@ class Renderer:
             "-af",
             "apad",
 
-            "-shortest",
+            "-t",
+            str(sum(item["duration"] for item in timeline)),
 
             str(output_file)
 

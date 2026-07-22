@@ -139,7 +139,7 @@ class ImageBuilder:
 
         frame_count = max(
             1,
-            int(round(duration * FPS))
+            int(np.ceil(duration * FPS))
         )
 
         motion = self._motion()
