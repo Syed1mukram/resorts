@@ -11,9 +11,8 @@ from src.image_matcher import ImageMatcher
 from src.pexels_api import PexelsAPI
 
 
-VIDEO_RATIO = 0.35
+VIDEO_RATIO = 0.30
 VIDEO_COOLDOWN = 4
-MIN_SEGMENT = 1.5
 
 
 class TimelineBuilder:
@@ -26,121 +25,90 @@ class TimelineBuilder:
 
         self.used_images = deque(maxlen=5)
         self.used_videos = deque(maxlen=VIDEO_COOLDOWN)
-    # -----------------------------------------------------
 
-    def build(self):
+def build(self):
 
-        log("Generating transcript...")
+    log("Generating transcript...")
 
-        segments = self.transcript.transcribe(AUDIO_FILE)
+    segments = self.transcript.transcribe(AUDIO_FILE)
 
-        segments = [
-            s for s in segments
-            if (float(s["end"]) - float(s["start"])) >= MIN_SEGMENT
-        ]
+    log("Indexing images...")
 
-        log("Indexing images...")
+    self.matcher.index_images(IMAGES_DIR)
 
-        self.matcher.index_images(IMAGES_DIR)
+    timeline = []
 
-        timeline = []
+    image_count = 0
+    video_count = 0
 
-        image_count = 0
-        video_count = 0
+    next_video = 3
 
-        next_video = 3
+    total_segments = len(segments)
 
-        for index, seg in enumerate(segments):
+    for index, seg in enumerate(segments):
 
-            start = float(seg["start"])
-            end = float(seg["end"])
-            duration = end - start
+        start = float(seg["start"])
+        end = float(seg["end"])
+        duration = end - start
+        text = seg["text"].strip()
 
-            text = seg["text"].strip()
+        media = None
+        media_type = "image"
 
-            media = None
-            media_type = "image"
+        use_video = (
+            index >= next_video
+            and
+            video_count < int(total_segments * VIDEO_RATIO)
+        )
+        if use_video:
 
-            use_video = (
-                index >= next_video
-                and
-                video_count < int(len(segments) * VIDEO_RATIO)
-            )
+            video = self.pexels.download(text)
 
-            # ---------------- VIDEO ----------------
+            if video and video not in self.used_videos:
 
-            if use_video:
+                media = video
+                media_type = "video"
 
-                video = self.pexels.download(text)
+                self.used_videos.append(video)
 
-                if video and video not in self.used_videos:
+                video_count += 1
+                next_video = index + VIDEO_COOLDOWN
 
-                    media = video
-                    media_type = "video"
+        if media is None:
 
-                    self.used_videos.append(video)
+            result = self.matcher.find_best(text)
 
-                    video_count += 1
-                    next_video = index + VIDEO_COOLDOWN
+            if result:
 
-            # ---------------- IMAGE ----------------
+                media, _ = result
+                media_type = "image"
+                image_count += 1
 
-            if media is None:
+        if media is None:
 
-                for _ in range(5):
+            if timeline:
 
-                    result = self.matcher.find_best(text)
+                media = timeline[-1]["media"]
+                media_type = timeline[-1]["media_type"]
 
-                    if result is None:
-                        break
+            else:
 
-                    image, score = result
+                continue
 
-                    if image in self.used_images:
-                        continue
+        timeline.append({
 
-                    media = image
-                    media_type = "image"
+            "start": start,
+            "end": end,
+            "duration": duration,
+            "text": text,
+            "media": media,
+            "media_type": media_type,
 
-                    self.used_images.append(image)
+        })
 
-                    image_count += 1
-                    break
+    log(f"Segments : {len(segments)}")
+    log(f"Timeline : {len(timeline)}")
+    log(f"Images   : {image_count}")
+    log(f"Videos   : {video_count}")
 
-            # ---------------- FALLBACK ----------------
-
-            if media is None:
-
-                if timeline:
-
-                    media = timeline[-1]["media"]
-                    media_type = timeline[-1]["media_type"]
-
-                else:
-
-                    result = self.matcher.find_best(text)
-
-                    if result:
-
-                        media, _ = result
-                        media_type = "image"
-                    else:
-                        continue
-
-            timeline.append({
-
-                "start": start,
-                "end": end,
-                "duration": duration,
-                "text": text,
-                "media": media,
-                "media_type": media_type,
-
-            })
-
-        log(f"Segments : {len(segments)}")
-        log(f"Timeline : {len(timeline)}")
-        log(f"Images   : {image_count}")
-        log(f"Videos   : {video_count}")
-
-        return timeline
+    return timeline
