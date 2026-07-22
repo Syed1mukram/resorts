@@ -10,8 +10,8 @@ from config import (
 from src.utils import log
 
 
-MIN_SEGMENT = 0.3
-MAX_SEGMENT = 4.0
+MIN_SEGMENT = 2.5
+MAX_SEGMENT = 5.0
 
 
 class TranscriptGenerator:
@@ -77,44 +77,29 @@ class TranscriptGenerator:
         words = segment.words or []
 
         duration = float(
-
             segment.end - segment.start
-
         )
 
         if (
-
             not words
-
             or duration <= MAX_SEGMENT
-
         ):
 
             return [
-
                 {
-
                     "start": float(segment.start),
-
                     "end": float(segment.end),
-
                     "duration": duration,
-
                     "text": segment.text.strip(),
-
                 }
-
             ]
 
         chunks = []
 
         current = []
 
-        current_start = float(
+        current_start = float(words[0].start)
 
-            words[0].start
-
-        )
         for word in words:
 
             current.append(word)
@@ -125,13 +110,11 @@ class TranscriptGenerator:
 
             split = False
 
-            # Split on punctuation
             if word.word.strip().endswith(
                 (".", "!", "?")
             ):
                 split = True
 
-            # Or max duration reached
             elif elapsed >= MAX_SEGMENT:
                 split = True
 
@@ -153,12 +136,9 @@ class TranscriptGenerator:
 
                 current = []
 
-                current_start = float(
-                    word.end
-                )
+                if word != words[-1]:
+                    current_start = float(word.end)
 
-        # IMPORTANT:
-        # Never lose the last words.
         if current:
 
             chunks.append(
@@ -175,7 +155,28 @@ class TranscriptGenerator:
 
             )
 
-        return chunks
+        # Merge very short chunks
+        merged = []
+
+        for chunk in chunks:
+
+            if (
+                merged
+                and chunk["duration"] < MIN_SEGMENT
+            ):
+
+                merged[-1]["end"] = chunk["end"]
+                merged[-1]["duration"] = (
+                    merged[-1]["end"] - merged[-1]["start"]
+                )
+                merged[-1]["text"] += " " + chunk["text"]
+
+            else:
+
+                merged.append(chunk)
+
+        return merged
+
     # -----------------------------------------------------
 
     def transcribe(
