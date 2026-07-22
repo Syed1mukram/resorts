@@ -1,15 +1,10 @@
 from collections import deque
 
-from config import (
-    AUDIO_FILE,
-    IMAGES_DIR,
-)
-
+from config import AUDIO_FILE, IMAGES_DIR
 from src.utils import log
 from src.transcript import TranscriptGenerator
 from src.image_matcher import ImageMatcher
 from src.pexels_api import PexelsAPI
-
 
 VIDEO_RATIO = 0.30
 VIDEO_COOLDOWN = 4
@@ -18,97 +13,67 @@ VIDEO_COOLDOWN = 4
 class TimelineBuilder:
 
     def __init__(self):
-
         self.transcript = TranscriptGenerator()
         self.matcher = ImageMatcher()
         self.pexels = PexelsAPI()
-
         self.used_images = deque(maxlen=5)
         self.used_videos = deque(maxlen=VIDEO_COOLDOWN)
 
     def build(self):
+        log("Generating transcript...")
+        segments = self.transcript.transcribe(AUDIO_FILE)
+        log("Indexing images...")
+        self.matcher.index_images(IMAGES_DIR)
 
-    log("Generating transcript...")
+        timeline=[]
+        image_count=0
+        video_count=0
+        next_video=3
+        total_segments=len(segments)
 
-    segments = self.transcript.transcribe(AUDIO_FILE)
+        for index,seg in enumerate(segments):
+            start=float(seg["start"])
+            end=float(seg["end"])
+            duration=end-start
+            text=seg["text"].strip()
 
-    log("Indexing images...")
+            media=None
+            media_type="image"
 
-    self.matcher.index_images(IMAGES_DIR)
+            if index>=next_video and video_count<int(total_segments*VIDEO_RATIO):
+                video=self.pexels.download(text)
+                if video and video not in self.used_videos:
+                    media=video
+                    media_type="video"
+                    self.used_videos.append(video)
+                    video_count+=1
+                    next_video=index+VIDEO_COOLDOWN
 
-    timeline = []
+            if media is None:
+                result=self.matcher.find_best(text)
+                if result:
+                    media,_=result
+                    media_type="image"
+                    image_count+=1
 
-    image_count = 0
-    video_count = 0
+            if media is None:
+                if timeline:
+                    media=timeline[-1]["media"]
+                    media_type=timeline[-1]["media_type"]
+                else:
+                    continue
 
-    next_video = 3
+            timeline.append({
+                "start":start,
+                "end":end,
+                "duration":duration,
+                "text":text,
+                "media":media,
+                "media_type":media_type,
+            })
 
-    total_segments = len(segments)
-
-    for index, seg in enumerate(segments):
-
-        start = float(seg["start"])
-        end = float(seg["end"])
-        duration = end - start
-        text = seg["text"].strip()
-
-        media = None
-        media_type = "image"
-
-        use_video = (
-            index >= next_video
-            and
-            video_count < int(total_segments * VIDEO_RATIO)
-        )
-        if use_video:
-
-            video = self.pexels.download(text)
-
-            if video and video not in self.used_videos:
-
-                media = video
-                media_type = "video"
-
-                self.used_videos.append(video)
-
-                video_count += 1
-                next_video = index + VIDEO_COOLDOWN
-
-        if media is None:
-
-            result = self.matcher.find_best(text)
-
-            if result:
-
-                media, _ = result
-                media_type = "image"
-                image_count += 1
-
-        if media is None:
-
-            if timeline:
-
-                media = timeline[-1]["media"]
-                media_type = timeline[-1]["media_type"]
-
-            else:
-
-                continue
-
-        timeline.append({
-
-            "start": start,
-            "end": end,
-            "duration": duration,
-            "text": text,
-            "media": media,
-            "media_type": media_type,
-
-        })
-
-    log(f"Segments : {len(segments)}")
-    log(f"Timeline : {len(timeline)}")
-    log(f"Images   : {image_count}")
-    log(f"Videos   : {video_count}")
-
-    return timeline
+        log(f"Segments : {len(segments)}")
+        log(f"Timeline : {len(timeline)}")
+        log(f"Images   : {image_count}")
+        log(f"Videos   : {video_count}")
+        return timeline
