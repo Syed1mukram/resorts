@@ -146,7 +146,7 @@ class Renderer:
             "-r",
             "30",
 
-            "-fps_mode",
+            "-vsync",
             "cfr",
 
             "-c:a",

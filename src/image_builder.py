@@ -179,7 +179,7 @@ class ImageBuilder:
             "-preset",
             PRESET,
 
-            "-crf",
+            "-cq",
             str(CRF),
 
             "-pix_fmt",
