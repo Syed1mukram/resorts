@@ -26,7 +26,7 @@ class TimelineBuilder:
         self.used_images = deque(maxlen=5)
         self.used_videos = deque(maxlen=VIDEO_COOLDOWN)
 
-def build(self):
+    def build(self):
 
     log("Generating transcript...")
 
