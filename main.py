@@ -31,6 +31,16 @@ def main():
 
     timeline = builder.build()
 
+
+    print("\n========== TIMELINE ==========")
+    total = 0.0
+    for i, item in enumerate(timeline):
+        d = float(item["duration"])
+        total += d
+        print(f"{i:02d} | {item['media_type']:5} | {d:.3f}")
+    print(f"\nTOTAL TIMELINE = {total:.3f} sec")
+    print("==============================\n")
+
     if not timeline:
         raise RuntimeError("Timeline is empty.")
 

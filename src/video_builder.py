@@ -59,7 +59,7 @@ class VideoBuilder:
             "-preset",
             "medium",
 
-            "-crf",
+            "-cq",
             "18",
 
             "-pix_fmt",
