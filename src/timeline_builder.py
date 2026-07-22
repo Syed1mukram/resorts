@@ -36,8 +36,15 @@ class TimelineBuilder:
         image_count=0
         video_count=0
         max_videos=max(1,int(len(segments)*VIDEO_RATIO))
-        for seg in segments:
-            start=float(seg["start"]); end=float(seg["end"]); duration=end-start
+        transcript_end = float(segments[-1]["end"])
+
+        for i, seg in enumerate(segments):
+            start=float(seg["start"])
+            if i < len(segments)-1:
+                end=float(segments[i+1]["start"])
+            else:
+                end=transcript_end
+            duration=end-start
             text=seg["text"].strip()
             media=None; media_type="image"
             if self.wants_video(text) and video_count<max_videos:
