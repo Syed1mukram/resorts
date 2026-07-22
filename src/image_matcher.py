@@ -17,6 +17,7 @@ class ImageMatcher:
 
     def __init__(self):
 
+        self.last_scene = None
         log("Loading CLIP model...")
 
         self.device = (
@@ -227,38 +228,19 @@ class ImageMatcher:
     @torch.no_grad()
     def find_best(
         self,
-        text: str
-    ) -> Optional[tuple]:
+        prompt: str,
+        scene: str = "general"
+
+    ):
 
         if not self.image_data:
-
             return None
-
-        text = text.lower()
-
-        keywords = [
-            "room", "suite", "bed", "bathroom",
-            "pool", "restaurant", "dining",
-            "breakfast", "bar", "spa",
-            "gym", "beach", "ocean",
-            "sea", "balcony", "lobby",
-            "view"
-        ]
-
-        boost = []
-
-        for word in keywords:
-            if word in text:
-                boost.append(word)
-
-        if boost:
-            text = " ".join(boost) + " " + text
 
         if len(self.used_images) >= len(self.image_data):
             self.used_images.clear()
 
         candidates = self.find_top_k(
-            text=text,
+            text=prompt,
             k=20,
             min_score=0.12
         )
@@ -266,18 +248,32 @@ class ImageMatcher:
         if not candidates:
             return None
 
+        # Same scene -> don't change image if possible
+        if scene == self.last_scene:
+
+            for image_path, score in candidates:
+
+                if image_path in self.recent_images:
+
+                    return image_path, score
+
         available = [
+
             c for c in candidates
+
             if c[0] not in self.used_images
+
         ]
 
         if not available:
-            available = candidates
+           available = candidates
 
         image_path, score = available[0]
 
         self.used_images.add(image_path)
         self.recent_images.append(image_path)
+
+        self.last_scene = scene
 
         return image_path, score
 

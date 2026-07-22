@@ -25,6 +25,9 @@ IMAGE_KEYWORDS = {
 class TimelineBuilder:
 
     def __init__(self):
+        from src.scene_analyzer import SceneAnalyzer
+
+        self.scene = SceneAnalyzer()
         self.transcript = TranscriptGenerator()
         self.matcher = ImageMatcher()
         self.pexels = PexelsAPI()
@@ -84,7 +87,12 @@ class TimelineBuilder:
 
             if media is None:
 
-                result = self.matcher.find_best(text)
+                scene = self.scene.analyze(text)
+
+                result = self.matcher.find_best(
+                     prompt=scene["prompt"],
+                     scene=scene["scene"]
+                )
 
                 if result:
                     media = result[0]
