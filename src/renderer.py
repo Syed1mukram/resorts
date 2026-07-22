@@ -164,6 +164,11 @@ class Renderer:
             "-movflags",
             "+faststart",
 
+            "-af",
+            "apad",
+
+            "-shortest",
+
             str(output_file)
 
         ]
