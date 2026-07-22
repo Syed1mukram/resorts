@@ -58,16 +58,15 @@ class TimelineBuilder:
 
         for i, seg in enumerate(segments):
 
+            start = float(seg["start"])
+
             if i == 0:
                 start = 0.0
-            else:
-                start = float(seg["start"])
 
-            # Continuous timeline
+            end = float(seg["end"])
+
             if i == len(segments) - 1:
                 end = transcript_end
-            else:
-                end = float(segments[i + 1]["start"])
 
             duration = max(0.05, end - start)
 
