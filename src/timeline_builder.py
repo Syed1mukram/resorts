@@ -55,7 +55,10 @@ class TimelineBuilder:
 
         for i, seg in enumerate(segments):
 
-            start = float(seg["start"])
+            if i == 0:
+                start = 0.0
+            else:
+                start = float(seg["start"])
 
             # Continuous timeline
             if i == len(segments) - 1:
