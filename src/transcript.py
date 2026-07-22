@@ -10,8 +10,8 @@ from config import (
 from src.utils import log
 
 
-MIN_SEGMENT = 2.5
-MAX_SEGMENT = 5.0
+MIN_SEGMENT = 1.8
+MAX_SEGMENT = 3.2
 
 
 class TranscriptGenerator:
@@ -115,7 +115,7 @@ class TranscriptGenerator:
             ):
                 split = True
 
-            elif elapsed >= MAX_SEGMENT:
+            elif elapsed >= 3.0:
                 split = True
 
             if split:
@@ -215,6 +215,13 @@ class TranscriptGenerator:
                     and part["text"].strip()
                 ):
                     results.append(part)
+
+                    print(
+                        f"{part['start']:.2f} -> "
+                        f"{part['end']:.2f} | "
+                        f"{part['duration']:.2f} | "
+                        f"{part['text']}"
+                    )
 
         log(
             f"Language : {info.language}"
