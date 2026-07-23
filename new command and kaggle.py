@@ -8,3 +8,14 @@ git push
 %cd resorts
 !pip install -q -r requirements.txt
 !python main.py
+
+
+
+git add .
+git commit -m "New hotel"
+git push
+
+!rm -rf /kaggle/working/resorts
+!git clone https://github.com/Syed1mukram/resorts.git
+%cd resorts
+!python main.py
