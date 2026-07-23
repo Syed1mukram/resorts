@@ -15,7 +15,40 @@ git add input
 git commit -m "New hotel"
 git push
 
-!rm -rf /kaggle/working/resorts
+cd /kaggle/working && \
+rm -rf resorts && \
+git clone https://github.com/Syed1mukram/resorts.git && \
+cd resorts && \
+python main.py
+
+
+-----------
+
+git add input
+git commit -m "New hotel"
+git push
+
+
+
+%%bash
+pip install -q faster-whisper ctranslate2 open-clip-torch python-dotenv
+
+%%bash
+
+cd /kaggle/working
+rm -rf resorts
+git clone https://github.com/Syed1mukram/resorts.git
+cd resorts
+
+python -u main.py
+
+
+%cd /kaggle/working
+
+!rm -rf resorts
+
 !git clone https://github.com/Syed1mukram/resorts.git
+
 %cd resorts
+
 !python main.py

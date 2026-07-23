@@ -59,11 +59,11 @@ class Camera:
 
         progress = self.ease(progress)
 
-        zoom = 0.9
+        zoom = 1.0
 
         if motion == "zoom_in":
 
-            zoom = 0.9 + (
+            zoom = 1.04 + (
                 self.zoom_strength * progress
             )
 
@@ -118,18 +118,13 @@ class Camera:
     def render(
 
         self,
-
         image,
-
         progress,
-
         motion,
-
         out_width,
-
         out_height,
-
     ):
+        return cv2.resize(image, (out_width, out_height))
 
         img_h, img_w = image.shape[:2]
 
@@ -182,7 +177,7 @@ class Camera:
 
             flags=cv2.INTER_LINEAR,
 
-            borderMode=cv2.BORDER_REFLECT101,
+            borderMode=cv2.BORDER_REPLICATE,
 
         )
 
