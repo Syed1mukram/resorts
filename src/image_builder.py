@@ -1,3 +1,4 @@
+from PIL import Image
 from src.camera import Camera
 from pathlib import Path
 import random
@@ -112,13 +113,21 @@ class ImageBuilder:
         duration
     ):
 
-        image = cv2.imread(str(image_path))
 
-        if image is None:
+        try:
 
-            raise RuntimeError(
-                f"Cannot read image : {image_path}"
+            pil = Image.open(image_path).convert("RGB")
+
+            image = cv2.cvtColor(
+                np.array(pil),
+                cv2.COLOR_RGB2BGR
             )
+
+        except Exception as e:
+
+           raise RuntimeError(
+               f"Cannot read image : {image_path}\n{e}"
+           )
 
         image = self._cover_resize(image)
 
