@@ -62,16 +62,10 @@ class Camera:
         zoom = 1.0
 
         if motion == "zoom_in":
-
-            zoom = 1.04 + (
-                zoom = 1.0 + self.zoom_strength * progress
-            )
+            zoom = 1.0 + self.zoom_strength * progress
 
         elif motion == "zoom_out":
-
-            zoom = (
-                1.0 + self.zoom_strength
-            ) - (
+            zoom = (1.0 + self.zoom_strength) - (
                 self.zoom_strength * progress
             )
 
