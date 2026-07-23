@@ -52,3 +52,11 @@ python -u main.py
 %cd resorts
 
 !python main.py
+
+-------------------
+
+file change :
+
+git add .
+git commit -m "New hotel"
+git push

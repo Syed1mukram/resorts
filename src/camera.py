@@ -8,7 +8,7 @@ class Camera:
 
     def __init__(self):
 
-        self.zoom_strength = 0.04
+        self.zoom_strength = 0.03
         self.pan_strength = 0.02
 
     # -----------------------------------------------------
@@ -64,13 +64,13 @@ class Camera:
         if motion == "zoom_in":
 
             zoom = 1.04 + (
-                self.zoom_strength * progress
+                zoom = 1.0 + self.zoom_strength * progress
             )
 
         elif motion == "zoom_out":
 
             zoom = (
-                0.9 + self.zoom_strength
+                1.0 + self.zoom_strength
             ) - (
                 self.zoom_strength * progress
             )
@@ -94,15 +94,15 @@ class Camera:
 
         elif motion == "right":
 
-            tx = max_x * progress
+            tx = max_x * progress * 0.35
 
         elif motion == "up":
 
-            ty = max_y * (1.0 - progress)
+            tx = max_x * (1.0 - progress * 0.35)
 
         elif motion == "down":
 
-            ty = max_y * progress
+            ty = max_y * (1.0 - progress * 0.35)
 
         return (
 
@@ -145,20 +145,20 @@ class Camera:
         max_y = img_h - crop_h
 
         if motion == "left":
-            x = int(max_x * (1.0 - progress))
+            x = int(max_x * (1.0 - progress * 0.30))
             y = max_y // 2
 
         elif motion == "right":
-            x = int(max_x * progress)
+            x = int(max_x * progress * 0.30)
             y = max_y // 2
 
         elif motion == "up":
             x = max_x // 2
-            y = int(max_y * (1.0 - progress))
+            y = int(max_y * (1.0 - progress * 0.30))
 
         elif motion == "down":
             x = max_x // 2
-            y = int(max_y * progress)
+            y = int(max_y * progress * 0.30)
 
         else:
             x = max_x // 2
