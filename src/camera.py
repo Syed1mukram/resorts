@@ -116,7 +116,6 @@ class Camera:
     # -----------------------------------------------------
 
     def render(
-
         self,
         image,
         progress,
@@ -124,69 +123,56 @@ class Camera:
         out_width,
         out_height,
     ):
-        return cv2.resize(image, (out_width, out_height))
+
+        progress = self.ease(progress)
 
         img_h, img_w = image.shape[:2]
 
-        tx, ty, zoom = self.get_transform(
+        if motion == "zoom_in":
+            zoom = 1.00 + 0.04 * progress
+        elif motion == "zoom_out":
+            zoom = 1.04 - 0.04 * progress
+        else:
+            zoom = 1.02
 
-            progress,
+        crop_w = int(out_width / zoom)
+        crop_h = int(out_height / zoom)
 
-            motion,
+        crop_w = min(crop_w, img_w)
+        crop_h = min(crop_h, img_h)
 
-            img_w,
+        max_x = img_w - crop_w
+        max_y = img_h - crop_h
 
-            img_h,
+        if motion == "left":
+            x = int(max_x * (1.0 - progress))
+            y = max_y // 2
 
-            out_width,
+        elif motion == "right":
+            x = int(max_x * progress)
+            y = max_y // 2
 
-            out_height,
+        elif motion == "up":
+            x = max_x // 2
+            y = int(max_y * (1.0 - progress))
 
-        )
+        elif motion == "down":
+            x = max_x // 2
+            y = int(max_y * progress)
 
-        # Center of image
-        cx = img_w * 0.5
-        cy = img_h * 0.5
+        else:
+            x = max_x // 2
+            y = max_y // 2
 
-        # Translation to move virtual camera
-        dx = -(tx)
-        dy = -(ty)
-
-        # Affine matrix
-        M = np.array(
-
-            [
-
-                [zoom, 0.0, (1.0 - zoom) * cx + dx],
-
-                [0.0, zoom, (1.0 - zoom) * cy + dy],
-
-            ],
-
-            dtype=np.float32,
-
-        )
-
-        frame = cv2.warpAffine(
-
-            image,
-
-            M,
-
-            (img_w, img_h),
-
-            flags=cv2.INTER_LINEAR,
-
-            borderMode=cv2.BORDER_REPLICATE,
-
-        )
-
-        x = (img_w - out_width) // 2
-        y = (img_h - out_height) // 2
-
-        frame = frame[
-            y:y + out_height,
-            x:x + out_width
+        crop = image[
+            y:y + crop_h,
+            x:x + crop_w
         ]
+
+        frame = cv2.resize(
+            crop,
+            (out_width, out_height),
+            interpolation=cv2.INTER_LANCZOS4
+        )
 
         return frame
