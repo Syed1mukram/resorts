@@ -64,6 +64,7 @@ IMAGE_EXTENSIONS = (
     ".png",
     ".webp",
     ".bmp",
+    ".avif",
 )
 
 DEFAULT_ZOOM = 1.05

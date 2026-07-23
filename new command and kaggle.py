@@ -11,7 +11,7 @@ git push
 
 
 
-git add .
+git add input
 git commit -m "New hotel"
 git push
 
