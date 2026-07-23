@@ -52,11 +52,14 @@ class Camera:
 
         img_h, img_w = image.shape[:2]
 
+        print(img_w, img_h)
+        print(out_width, out_height)
+
         if motion == "zoom_in":
-            zoom = 1.00 + 0.03 * progress
+            zoom = 1.00 + 0.08 * progress
 
         elif motion == "zoom_out":
-            zoom = 1.03 - 0.03 * progress
+            zoom = 1.08 - 0.08 * progress
 
         else:
             zoom = 1.015
