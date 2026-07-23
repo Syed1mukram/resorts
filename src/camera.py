@@ -39,76 +39,6 @@ class Camera:
 
     # -----------------------------------------------------
 
-    def get_transform(
-
-        self,
-
-        progress,
-
-        motion,
-
-        img_width,
-
-        img_height,
-
-        out_width,
-
-        out_height,
-
-    ):
-
-        progress = self.ease(progress)
-
-        zoom = 1.0
-
-        if motion == "zoom_in":
-            zoom = 1.0 + self.zoom_strength * progress
-
-        elif motion == "zoom_out":
-            zoom = (1.0 + self.zoom_strength) - (
-                self.zoom_strength * progress
-            )
-
-        max_x = max(
-            0.0,
-            img_width - out_width
-        )
-
-        max_y = max(
-            0.0,
-            img_height - out_height
-        )
-
-        tx = max_x / 1.3
-        ty = max_y / 1.5
-
-        if motion == "left":
-
-            tx = max_x * (1.0 - progress)
-
-        elif motion == "right":
-
-            tx = max_x * progress * 0.35
-
-        elif motion == "up":
-
-            tx = max_x * (1.0 - progress * 0.35)
-
-        elif motion == "down":
-
-            ty = max_y * (1.0 - progress * 0.35)
-
-        return (
-
-            float(tx),
-
-            float(ty),
-
-            float(zoom)
-
-        )
-    # -----------------------------------------------------
-
     def render(
         self,
         image,
@@ -123,50 +53,51 @@ class Camera:
         img_h, img_w = image.shape[:2]
 
         if motion == "zoom_in":
-            zoom = 1.00 + 0.04 * progress
+            zoom = 1.00 + 0.03 * progress
+
         elif motion == "zoom_out":
-            zoom = 1.04 - 0.04 * progress
+            zoom = 1.03 - 0.03 * progress
+
         else:
-            zoom = 1.02
+            zoom = 1.015
 
-        crop_w = int(out_width / zoom)
-        crop_h = int(out_height / zoom)
+        crop_w = out_width / zoom
+        crop_h = out_height / zoom
 
-        crop_w = min(crop_w, img_w)
-        crop_h = min(crop_h, img_h)
+        max_x = max(0.0, img_w - crop_w)
+        max_y = max(0.0, img_h - crop_h)
 
-        max_x = img_w - crop_w
-        max_y = img_h - crop_h
+        x = max_x * 0.5
+        y = max_y * 0.5
+
+        pan = 0.30
 
         if motion == "left":
-            x = int(max_x * (1.0 - progress * 0.30))
-            y = max_y // 2
+            x = max_x * (0.5 - pan * progress)
 
         elif motion == "right":
-            x = int(max_x * progress * 0.30)
-            y = max_y // 2
+            x = max_x * (0.5 + pan * progress)
 
         elif motion == "up":
-            x = max_x // 2
-            y = int(max_y * (1.0 - progress * 0.30))
+            y = max_y * (0.5 - pan * progress)
 
         elif motion == "down":
-            x = max_x // 2
-            y = int(max_y * progress * 0.30)
+            y = max_y * (0.5 + pan * progress)
 
-        else:
-            x = max_x // 2
-            y = max_y // 2
+        x = np.clip(x, 0, max_x)
+        y = np.clip(y, 0, max_y)
 
-        crop = image[
-            y:y + crop_h,
-            x:x + crop_w
-        ]
+        x1 = int(round(x))
+        y1 = int(round(y))
+        x2 = int(round(x + crop_w))
+        y2 = int(round(y + crop_h))
+
+        crop = image[y1:y2, x1:x2]
 
         frame = cv2.resize(
             crop,
             (out_width, out_height),
-            interpolation=cv2.INTER_LANCZOS4
+            interpolation=cv2.INTER_CUBIC
         )
 
         return frame
