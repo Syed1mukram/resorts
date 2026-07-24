@@ -135,45 +135,56 @@ class Camera:
             out_height,
         )
 
-        # Camera window size
-        cam_w = round(out_width / zoom)
-        cam_h = round(out_height / zoom)
+        # Add padding to avoid mirror at edges
+        pad = 300
 
-        cam_w = min(cam_w, img_w)
-        cam_h = min(cam_h, img_h)
-
-        max_x = max(0, img_w - cam_w)
-        max_y = max(0, img_h - cam_h)
-
-        if motion == "left":
-            x = int(max_x * (1.0 - progress))
-            y = max_y // 2
-
-        elif motion == "right":
-            x = int(max_x * progress)
-            y = max_y // 2
-
-        elif motion == "up":
-            x = max_x // 2
-            y = int(max_y * (1.0 - progress))
-
-        elif motion == "down":
-            x = max_x // 2
-            y = int(max_y * progress)
-
-        else:
-            x = max_x // 2
-            y = max_y // 2
-
-        x = max(0, min(x, max_x))
-        y = max(0, min(y, max_y))
-
-        crop = image[y:y + cam_h, x:x + cam_w]
-
-        frame = cv2.resize(
-            crop,
-            (out_width, out_height),
-            interpolation=cv2.INTER_CUBIC,
+        image = cv2.copyMakeBorder(
+            image,
+            pad,
+            pad,
+            pad,
+            pad,
+            borderType=cv2.BORDER_REPLICATE,
         )
+
+        img_h, img_w = image.shape[:2]
+
+        # Shift translation because of padding
+        tx += pad
+        ty += pad
+
+        # Image center
+        cx = img_w * 0.5
+        cy = img_h * 0.5
+
+        # Camera translation
+        dx = tx - (img_w - out_width) / 2.0
+        dy = -(ty - (img_h - out_height) / 2.0)
+
+        # Affine matrix
+        M = np.array(
+            [
+                [zoom, 0.0, (1.0 - zoom) * cx + dx],
+                [0.0, zoom, (1.0 - zoom) * cy + dy],
+            ],
+            dtype=np.float32,
+        )
+
+        frame = cv2.warpAffine(
+            image,
+            M,
+            (img_w, img_h),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REPLICATE,
+        )
+
+        # Center crop
+        crop_x = (img_w - out_width) // 2
+        crop_y = (img_h - out_height) // 2
+
+        frame = frame[
+            crop_y:crop_y + out_height,
+            crop_x:crop_x + out_width,
+        ]
 
         return frame
