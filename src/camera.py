@@ -154,7 +154,7 @@ class Camera:
         cy = img_h * 0.5
 
         # Translation to move virtual camera
-        dx = -(tx)
+        dx = tx
         dy = -(ty)
 
         # Affine matrix
