@@ -136,8 +136,8 @@ class Camera:
         )
 
         # Camera window size
-        cam_w = int(out_width / zoom)
-        cam_h = int(out_height / zoom)
+        cam_w = round(out_width / zoom)
+        cam_h = round(out_height / zoom)
 
         cam_w = min(cam_w, img_w)
         cam_h = min(cam_h, img_h)
@@ -173,7 +173,7 @@ class Camera:
         frame = cv2.resize(
             crop,
             (out_width, out_height),
-            interpolation=cv2.INTER_LINEAR,
+            interpolation=cv2.INTER_CUBIC,
         )
 
         return frame
