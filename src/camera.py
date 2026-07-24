@@ -182,8 +182,7 @@ class Camera:
 
             flags=cv2.INTER_LINEAR,
 
-            borderMode=cv2.BORDER_CONSTANT,
-            borderValue=(255,255,255),
+            borderMode=cv2.BORDER_REFLECT101,
         )
 
         x = (img_w - out_width) // 2
