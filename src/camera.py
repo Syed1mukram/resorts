@@ -114,7 +114,8 @@ class Camera:
 
         )
     # -----------------------------------------------------
-        def render(
+
+    def render(
         self,
         image,
         progress,
@@ -167,7 +168,7 @@ class Camera:
         x = max(0, min(x, max_x))
         y = max(0, min(y, max_y))
 
-       crop = image[y:y + cam_h, x:x + cam_w]
+        crop = image[y:y + cam_h, x:x + cam_w]
 
         frame = cv2.resize(
             crop,
