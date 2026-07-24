@@ -8,7 +8,7 @@ class Camera:
 
     def __init__(self):
 
-        self.zoom_strength = 0.03
+        self.zoom_strength = 0.04
         self.pan_strength = 0.02
 
     # -----------------------------------------------------
@@ -39,68 +39,159 @@ class Camera:
 
     # -----------------------------------------------------
 
-    def render(
+    def get_transform(
+
         self,
-        image,
+
         progress,
+
         motion,
+
+        img_width,
+
+        img_height,
+
         out_width,
+
         out_height,
+
     ):
 
         progress = self.ease(progress)
 
-        img_h, img_w = image.shape[:2]
-
-        print(img_w, img_h)
-        print(out_width, out_height)
+        zoom = 0.9
 
         if motion == "zoom_in":
-            zoom = 1.00 + 0.08 * progress
+
+            zoom = 0.9 + (
+                self.zoom_strength * progress
+            )
 
         elif motion == "zoom_out":
-            zoom = 1.08 - 0.08 * progress
 
-        else:
-            zoom = 1.015
+            zoom = (
+                0.9 + self.zoom_strength
+            ) - (
+                self.zoom_strength * progress
+            )
 
-        crop_w = out_width / zoom
-        crop_h = out_height / zoom
+        max_x = max(
+            0.0,
+            img_width - out_width
+        )
 
-        max_x = max(0.0, img_w - crop_w)
-        max_y = max(0.0, img_h - crop_h)
+        max_y = max(
+            0.0,
+            img_height - out_height
+        )
 
-        x = max_x * 0.5
-        y = max_y * 0.5
-
-        pan = 0.30
+        tx = max_x / 1.3
+        ty = max_y / 1.5
 
         if motion == "left":
-            x = max_x * (0.5 - pan * progress)
+
+            tx = max_x * (1.0 - progress)
 
         elif motion == "right":
-            x = max_x * (0.5 + pan * progress)
+
+            tx = max_x * progress
 
         elif motion == "up":
-            y = max_y * (0.5 - pan * progress)
+
+            ty = max_y * (1.0 - progress)
 
         elif motion == "down":
-            y = max_y * (0.5 + pan * progress)
 
-        x = np.clip(x, 0, max_x)
-        y = np.clip(y, 0, max_y)
+            ty = max_y * progress
 
-        x1 = int(round(x))
-        y1 = int(round(y))
-        x2 = int(round(x + crop_w))
-        y2 = int(round(y + crop_h))
+        return (
 
-        crop = image[y1:y2, x1:x2]
+            float(tx),
 
-        frame = cv2.resize(
-            crop,
-            (out_width, out_height),
-            interpolation=cv2.INTER_CUBIC
+            float(ty),
+
+            float(zoom)
+
         )
+    # -----------------------------------------------------
+
+    def render(
+
+        self,
+
+        image,
+
+        progress,
+
+        motion,
+
+        out_width,
+
+        out_height,
+
+    ):
+
+        img_h, img_w = image.shape[:2]
+
+        tx, ty, zoom = self.get_transform(
+
+            progress,
+
+            motion,
+
+            img_w,
+
+            img_h,
+
+            out_width,
+
+            out_height,
+
+        )
+
+        # Center of image
+        cx = img_w * 0.5
+        cy = img_h * 0.5
+
+        # Translation to move virtual camera
+        dx = -(tx)
+        dy = -(ty)
+
+        # Affine matrix
+        M = np.array(
+
+            [
+
+                [zoom, 0.0, (1.0 - zoom) * cx + dx],
+
+                [0.0, zoom, (1.0 - zoom) * cy + dy],
+
+            ],
+
+            dtype=np.float32,
+
+        )
+
+        frame = cv2.warpAffine(
+
+            image,
+
+            M,
+
+            (img_w, img_h),
+
+            flags=cv2.INTER_LINEAR,
+
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=(255,255,255),
+        )
+
+        x = (img_w - out_width) // 2
+        y = (img_h - out_height) // 2
+
+        frame = frame[
+            y:y + out_height,
+            x:x + out_width
+        ]
 
         return frame

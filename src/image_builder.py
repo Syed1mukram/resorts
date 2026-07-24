@@ -37,8 +37,8 @@ class ImageBuilder:
             VIDEO_HEIGHT / h
         )
 
-        nw = int(np.ceil(w * scale * 1.05))
-        nh = int(np.ceil(h * scale * 1.05))
+        nw = int(np.ceil(w * scale * 1.12))
+        nh = int(np.ceil(h * scale * 1.12))
 
         image = cv2.resize(
             image,

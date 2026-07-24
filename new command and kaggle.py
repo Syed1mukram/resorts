@@ -60,3 +60,10 @@ file change :
 git add .
 git commit -m "New hotel"
 git push
+
+----------
+Git ko farq nahi padta, lekin baad me history dekhte waqt meaningful message zyada useful hote hain.
+
+git add .
+git commit -m "."
+git push
