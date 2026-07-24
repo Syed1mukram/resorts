@@ -63,14 +63,14 @@ class Camera:
 
         if motion == "zoom_in":
 
-            zoom = 0.9 + (
+            zoom = 1.0 + (
                 self.zoom_strength * progress
             )
 
         elif motion == "zoom_out":
 
             zoom = (
-                0.9 + self.zoom_strength
+                1.0 + self.zoom_strength
             ) - (
                 self.zoom_strength * progress
             )
@@ -85,16 +85,16 @@ class Camera:
             img_height - out_height
         )
 
-        tx = max_x / 1.3
-        ty = max_y / 1.5
+        tx = max_x / 2.0
+        ty = max_y / 2.0
 
         if motion == "left":
 
-            tx = max_x * (1.0 - progress)
+            tx = max_x * (1.0 - progress) * 0.85
 
         elif motion == "right":
 
-            tx = max_x * progress
+            tx = max_x * progress * 0.85
 
         elif motion == "up":
 
@@ -116,82 +116,75 @@ class Camera:
     # -----------------------------------------------------
 
     def render(
-
         self,
-
         image,
-
         progress,
-
         motion,
-
         out_width,
-
         out_height,
-
     ):
 
         img_h, img_w = image.shape[:2]
 
         tx, ty, zoom = self.get_transform(
-
             progress,
-
             motion,
-
             img_w,
-
             img_h,
-
             out_width,
-
             out_height,
-
         )
 
-        # Center of image
+        # Add padding to avoid mirror at edges
+        pad = 300
+
+        image = cv2.copyMakeBorder(
+            image,
+            pad,
+            pad,
+            pad,
+            pad,
+            borderType=cv2.BORDER_REPLICATE,
+        )
+
+        img_h, img_w = image.shape[:2]
+
+        # Shift translation because of padding
+        tx += pad
+        ty += pad
+
+        # Image center
         cx = img_w * 0.5
         cy = img_h * 0.5
 
-        # Translation to move virtual camera
-        dx = -(tx)
-        dy = -(ty)
+        # Camera translation
+        dx = tx - (img_w - out_width) / 2.0
+        dy = -(ty - (img_h - out_height) / 2.0)
 
         # Affine matrix
         M = np.array(
-
             [
-
                 [zoom, 0.0, (1.0 - zoom) * cx + dx],
-
                 [0.0, zoom, (1.0 - zoom) * cy + dy],
-
             ],
-
             dtype=np.float32,
-
         )
 
         frame = cv2.warpAffine(
-
             image,
-
             M,
-
             (img_w, img_h),
-
-            flags=cv2.INTER_LINEAR,
-
-            borderMode=cv2.BORDER_CONSTANT,
-            borderValue=(255,255,255),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REPLICATE,
         )
 
-        x = (img_w - out_width) // 2
-        y = (img_h - out_height) // 2
+        # Center crop
+        crop_x = (img_w - out_width) // 2
+        crop_y = (img_h - out_height) // 2
 
         frame = frame[
-            y:y + out_height,
-            x:x + out_width
+            crop_y:crop_y + out_height,
+            crop_x:crop_x + out_width,
         ]
 
         return frame
