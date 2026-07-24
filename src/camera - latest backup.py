@@ -85,8 +85,8 @@ class Camera:
             img_height - out_height
         )
 
-        tx = max_x / 2.0
-        ty = max_y / 2.0
+        tx = max_x / 1.3
+        ty = max_y / 1.5
 
         if motion == "left":
 
