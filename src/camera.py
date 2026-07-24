@@ -59,7 +59,7 @@ class Camera:
 
         progress = self.ease(progress)
 
-        zoom = 0.9
+        zoom = 1.0
 
         if motion == "zoom_in":
 
