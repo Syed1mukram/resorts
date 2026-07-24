@@ -90,11 +90,11 @@ class Camera:
 
         if motion == "left":
 
-            tx = max_x * (1.0 - progress)
+            tx = max_x * (1.0 - progress) * 0.85
 
         elif motion == "right":
 
-            tx = max_x * progress
+            tx = max_x * progress * 0.85
 
         elif motion == "up":
 
