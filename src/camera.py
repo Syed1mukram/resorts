@@ -116,81 +116,57 @@ class Camera:
     # -----------------------------------------------------
 
     def render(
-
         self,
-
         image,
-
         progress,
-
         motion,
-
         out_width,
-
         out_height,
-
     ):
 
         img_h, img_w = image.shape[:2]
 
         tx, ty, zoom = self.get_transform(
-
             progress,
-
             motion,
-
             img_w,
-
             img_h,
-
             out_width,
-
             out_height,
-
         )
 
-        # Center of image
+        # Image center
         cx = img_w * 0.5
         cy = img_h * 0.5
 
-        # Translation to move virtual camera
+        # Translation
         dx = tx
-        dy = -(ty)
+        dy = -ty
 
-        # Affine matrix
+        # Affine transform
         M = np.array(
-
             [
-
                 [zoom, 0.0, (1.0 - zoom) * cx + dx],
-
                 [0.0, zoom, (1.0 - zoom) * cy + dy],
-
             ],
-
             dtype=np.float32,
-
         )
 
         frame = cv2.warpAffine(
-
             image,
-
             M,
-
             (img_w, img_h),
-
             flags=cv2.INTER_LINEAR,
-
             borderMode=cv2.BORDER_REFLECT101,
         )
 
-        x = (img_w - out_width) // 2
-        y = (img_h - out_height) // 2
+        # Center crop
+        crop_x = (img_w - out_width) // 2
+        crop_y = (img_h - out_height) // 2
 
         frame = frame[
-            y:y + out_height,
-            x:x + out_width
+            crop_y:crop_y + out_height,
+            crop_x:crop_x + out_width,
         ]
 
         return frame
