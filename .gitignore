@@ -1,0 +1,10 @@
+output/
+*.mp4
+*.zip
+
+output/
+cache/
+downloads/
+
+models/
+*.safetensors

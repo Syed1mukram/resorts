@@ -1,0 +1,73 @@
+hotel folder delete karo
+
+!rm -rf /content/hotel
+!mkdir /content/hotel
+
+---------
+
+
+Zip Folder Delete
+
+!rm -rf /content/upscaled
+!rm -f /content/upscaled.zip
+!mkdir /content/upscaled
+
+-----------------
+
+
+Naye hotel ki images upload karo
+
+Left sidebar → Files → /content/hotel → Upload
+
+Ya poora hotel folder upload kar do.
+
+3. Wahi final cell dubara chalao
+
+import os
+import cv2
+from glob import glob
+
+os.makedirs("/content/upscaled", exist_ok=True)
+
+files = []
+for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp", "*.avif"):
+    files.extend(glob(f"/content/hotel/{ext}"))
+
+print(f"Found {len(files)} images")
+
+for f in files:
+    img = cv2.imread(f, cv2.IMREAD_UNCHANGED)
+
+    if img is None:
+        print("Skipped:", f)
+        continue
+
+    output, _ = upsampler.enhance(img, outscale=4)
+
+    # JPEG doesn't support alpha channel
+    if len(output.shape) == 3 and output.shape[2] == 4:
+        output = cv2.cvtColor(output, cv2.COLOR_BGRA2BGR)
+
+    name = os.path.splitext(os.path.basename(f))[0]
+    out = os.path.join("/content/upscaled", name + ".jpg")
+
+    cv2.imwrite(
+        out,
+        output,
+        [cv2.IMWRITE_JPEG_QUALITY, 95]
+    )
+
+print("DONE")
+
+----------
+
+
+Zip File 
+
+!zip -r /content/upscaled.zip /content/upscaled
+
+--------
+force zip
+
+from google.colab import files
+files.download("/content/upscaled.zip")
