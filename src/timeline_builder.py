@@ -77,6 +77,25 @@ class TimelineBuilder:
             media = None
             media_type = "image"
 
+            if i == 0:
+
+                result = self.matcher.find_best(
+                prompt="intro",
+                scene="intro"
+            )
+
+            timeline.append({
+                "start": start,
+                "end": end,
+                "duration": duration,
+                "text": text,
+                "media": result[0],
+                "media_type": "image"
+            })
+
+            image_count += 1
+            continue
+
             if self.wants_video(text) and video_count < max_videos:
 
                 video = self.pexels.download(text)
