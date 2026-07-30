@@ -241,6 +241,9 @@ class ImageMatcher:
                 intro_image = p
                 break
 
+        print("USED:", len(self.used_images))
+        print("INTRO:", intro_image)
+
         if (
             not self.used_images
             and intro_image
