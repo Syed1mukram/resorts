@@ -77,11 +77,7 @@ class TimelineBuilder:
             media = None
             media_type = "image"
 
-            if (
-                i != 0
-                and self.wants_video(text)
-                and video_count < max_videos
-            ):
+            if self.wants_video(text) and video_count < max_videos:
 
                 video = self.pexels.download(text)
 
