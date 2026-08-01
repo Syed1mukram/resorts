@@ -20,8 +20,7 @@ ASSETS_DIR = ROOT_DIR / "assets"
 # INPUT FILES
 # ==========================================================
 
-AUDIO_FILE = INPUT_DIR / "voice.mp3"
-IMAGES_DIR = INPUT_DIR / "images"
+HOTELS_DIR = INPUT_DIR / "images"
 
 # ==========================================================
 # CACHE
@@ -115,6 +114,6 @@ for folder in (
     STOCK_DIR,
     TEMP_DIR,
     ENHANCED_DIR,
-    IMAGES_DIR,
+    HOTELS_DIR,
 ):
     folder.mkdir(parents=True, exist_ok=True)
