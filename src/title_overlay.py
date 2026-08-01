@@ -11,8 +11,7 @@ class TitleOverlay:
 
         # Windows / Kaggle common fonts
         self.font_paths = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-            "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
             "C:/Windows/Fonts/arialbd.ttf",
         ]
 
@@ -95,7 +94,7 @@ class TitleOverlay:
             "RGBA"
         )
 
-        number_font = self._font(90)
+        number_font = self._font(+90)
         title_font = self._font(76)
         small_font = self._font(34, bold=False)
 
