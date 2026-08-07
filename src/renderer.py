@@ -4,7 +4,6 @@ import subprocess
 
 from src.image_builder import ImageBuilder
 from src.video_builder import VideoBuilder
-from src.title_overlay import TitleOverlay
 
 
 class Renderer:
@@ -13,7 +12,6 @@ class Renderer:
 
         self.images = ImageBuilder()
         self.videos = VideoBuilder()
-        self.title_overlay = TitleOverlay()
 
         self.temp_dir = Path("output/temp")
         self.temp_dir.mkdir(parents=True, exist_ok=True)
@@ -83,11 +81,13 @@ class Renderer:
     def render(
 
         self,
+
         timeline,
+
         audio_file,
+
         output_file,
-        hotel_number,
-        hotel_name,
+
     ):
 
         self._clean()
@@ -95,14 +95,6 @@ class Renderer:
         clips = self._build(timeline)
 
         concat = self._concat_file(clips)
-
-        overlay_file = self.temp_dir / "title_overlay.png"
-
-        self.title_overlay.create(
-            hotel_number=hotel_number,
-            hotel_name=hotel_name,
-            output_file=overlay_file
-        )
 
         output_file = Path(output_file)
 
@@ -114,32 +106,23 @@ class Renderer:
         cmd = [
 
             "ffmpeg",
+
             "-y",
 
-            # Main video
             "-f",
             "concat",
+
             "-safe",
             "0",
+
             "-i",
             str(concat),
 
-            # Audio
             "-i",
             str(audio_file),
 
-            # Transparent title overlay PNG
-            "-loop",
-            "1",
-            "-i",
-            str(overlay_file),
-
-            # Overlay ONLY during first 3 seconds
-            "-filter_complex",
-            "[0:v][2:v]overlay=0:0:enable='between(t,0,3)'[v]",
-
             "-map",
-            "[v]",
+            "0:v:0",
 
             "-map",
             "1:a:0",
@@ -171,12 +154,11 @@ class Renderer:
             "-ar",
             "48000",
 
-            "-shortest",
-
             "-movflags",
             "+faststart",
 
             str(output_file)
+
         ]
 
         subprocess.run(

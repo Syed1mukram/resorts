@@ -61,7 +61,7 @@ for hotel in os.listdir(INPUT_ROOT):
         if img is None:
             continue
 
-        output, _ = upsampler.enhance(img, outscale=4)
+        output, _ = upsampler.enhance(img, outscale=2)
 
         if len(output.shape) == 3 and output.shape[2] == 4:
             output = cv2.cvtColor(output, cv2.COLOR_BGRA2BGR)

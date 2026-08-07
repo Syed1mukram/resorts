@@ -39,11 +39,6 @@ def main():
         reverse=True
     )
 
-    hotel_folders = [
-        p for p in hotel_folders
-        if p.name == "9"
-    ]
-
     if not hotel_folders:
         raise RuntimeError("No hotel folders found.")
 
@@ -55,15 +50,6 @@ def main():
 
         audio_file = hotel_dir / "voice.mp3"
         images_dir = hotel_dir / "images"
-
-        title_file = hotel_dir / "title.txt"
-
-        if title_file.exists():
-            hotel_name = title_file.read_text(
-                encoding="utf-8"
-            ).strip()
-        else:
-            hotel_name = f"Hotel {hotel_number}"
 
         log("----------------------------------------")
         log(f" Processing Hotel #{hotel_number}")
@@ -103,9 +89,7 @@ def main():
         renderer.render(
             timeline=timeline,
             audio_file=audio_file,
-            output_file=output_path,
-            hotel_number=hotel_number,
-            hotel_name=hotel_name
+            output_file=output_path
         )
 
         log(

@@ -29,7 +29,7 @@ git add input
 git commit -m "New hotel"
 git push
 
-
+2:37 minute to 2:43 minute command : 2:44- 3:17 kaggle time
 
 %%bash
 pip install -q faster-whisper ctranslate2 open-clip-torch python-dotenv
