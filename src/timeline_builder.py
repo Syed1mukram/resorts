@@ -6,7 +6,7 @@ from src.transcript import TranscriptGenerator
 from src.image_matcher import ImageMatcher
 from src.pexels_api import PexelsAPI
 
-VIDEO_RATIO = 0.30
+VIDEO_RATIO = 0.40
 
 VIDEO_KEYWORDS = {
     "beach","ocean","sea","waves","coast","coastline","shore","drone","aerial",
