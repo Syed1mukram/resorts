@@ -97,7 +97,6 @@ class Renderer:
             "-crf", "18",
             "-pix_fmt", "yuv420p",
             "-r", "30",
-            "-fps_mode", "cfr",
 
             "-c:a", "aac",
             "-b:a", "192k",
