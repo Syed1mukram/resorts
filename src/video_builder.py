@@ -54,10 +54,9 @@ class VideoBuilder:
             "-an",
 
             "-c:v",
-            "libx264",
+            "h264_nvenc",
 
-            "-preset",
-            "medium",
+            "-preset", "p4",
 
             "-cq",
             "18",

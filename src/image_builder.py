@@ -180,13 +180,12 @@ class ImageBuilder:
             "-i",
             str(output_path),
 
-            "-c:v", "libx264",
+            "-c:v", "h264_nvenc",
 
-            "-preset",
-            PRESET,
+            "-preset", "p4",
+            
 
-            "-cq",
-            str(CRF),
+            "-cq", "18",
 
             "-pix_fmt",
             "yuv420p",

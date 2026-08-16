@@ -92,8 +92,8 @@ class Renderer:
             # Use CPU x264 for the final encode.
             # Kaggle GPU is used by the AI/CLIP stages;
             # NVENC is not assumed to be available.
-            "-c:v", "libx264",
-            "-preset", "medium",
+            "-c:v", "h264_nvenc",
+            "-preset", "p4",
             "-crf", "18",
             "-pix_fmt", "yuv420p",
             "-r", "30",
