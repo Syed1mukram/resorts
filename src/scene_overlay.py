@@ -58,7 +58,7 @@ def style_7(hotel_number, hotel_name):
         f"drawtext="
         f"fontfile='{font_bold}':"
         f"text='{name}':"
-        f"x=88:"
+        f"x=92:"
         f"y=h-200:"
         f"fontsize=75:"
         f"fontcolor=ebd90c:"

@@ -94,7 +94,7 @@ class Renderer:
             # NVENC is not assumed to be available.
             "-c:v", "h264_nvenc",
             "-preset", "p4",
-            "-crf", "18",
+            "-cq", "23",
             "-pix_fmt", "yuv420p",
             "-r", "30",
 
