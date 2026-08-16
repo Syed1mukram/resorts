@@ -180,8 +180,7 @@ class ImageBuilder:
             "-i",
             str(output_path),
 
-            "-c:v",
-            "h264_nvenc",
+            "-c:v", "libx264",
 
             "-preset",
             PRESET,
