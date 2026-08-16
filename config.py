@@ -17,7 +17,7 @@ CACHE_DIR = ROOT_DIR / "cache"
 ASSETS_DIR = ROOT_DIR / "assets"
 
 # ==========================================================
-# INPUT FILES
+# INPUT
 # ==========================================================
 
 HOTELS_DIR = INPUT_DIR / "images"
@@ -45,13 +45,15 @@ VIDEO_HEIGHT = 1080
 
 FPS = 30
 
-VIDEO_CODEC = "h264_nvenc"
+# KAGGLE / CPU
+VIDEO_CODEC = "libx264"
+
 AUDIO_CODEC = "aac"
 
 PIXEL_FORMAT = "yuv420p"
 
 PRESET = "medium"
-CRF = 18
+CRF = 22
 
 # ==========================================================
 # IMAGE
@@ -98,7 +100,7 @@ MIN_SCENE_DURATION = 10.0
 IMAGE_RATIO = 0.70
 
 # ==========================================================
-# CACHE OPTIONS
+# CACHE
 # ==========================================================
 
 USE_CACHE = True
