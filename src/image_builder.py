@@ -129,88 +129,66 @@ class ImageBuilder:
 
         image = self._cover_resize(image)
 
-        writer = cv2.VideoWriter(
-
-            str(output_path),
-
-            cv2.VideoWriter_fourcc(*"mp4v"),
-
-            FPS,
-
-            (
-                VIDEO_WIDTH,
-                VIDEO_HEIGHT
-            )
-
-        )
-
-        frame_count = max(
-            1,
-            int(np.ceil(duration * FPS))
-        )
-
+        # GPU rendering: avoid CPU OpenCV frame-by-frame encoding.
+        # FFmpeg generates the motion and encodes directly with NVENC.
         motion = self._motion()
+        duration = max(float(duration), 0.05)
 
-        img_h, img_w = image.shape[:2]
+        source_image = Path(output_path).with_suffix(".source.jpg")
+        Image.fromarray(
+            cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        ).save(source_image, quality=95)
 
-        for frame_no in range(frame_count):
+        frames = max(int(duration * FPS), 1)
 
-            progress = frame_no / max(frame_count - 1, 1)
+        if motion == "zoom_in":
+            zoom = "min(zoom+0.0007,1.08)"
+            x = "iw/2-(iw/zoom/2)"
+            y = "ih/2-(ih/zoom/2)"
+        elif motion == "zoom_out":
+            zoom = "if(eq(on,1),1.08,max(1.0,zoom-0.0007))"
+            x = "iw/2-(iw/zoom/2)"
+            y = "ih/2-(ih/zoom/2)"
+        elif motion == "left":
+            zoom = "1.04"
+            x = f"(iw-iw/zoom)*(1-on/{max(frames-1,1)})"
+            y = "(ih-ih/zoom)/2"
+        elif motion == "right":
+            zoom = "1.04"
+            x = f"(iw-iw/zoom)*(on/{max(frames-1,1)})"
+            y = "(ih-ih/zoom)/2"
+        else:
+            zoom = "1.04"
+            x = "(iw-iw/zoom)/2"
+            y = "(ih-ih/zoom)/2"
 
-            frame = self.camera.render(
-                image=image,
-                progress=progress,
-                motion=motion,
-                out_width=VIDEO_WIDTH,
-                out_height=VIDEO_HEIGHT,
-
-            )
-
-            writer.write(frame)
-
-        writer.release()
-        temp_output = Path(output_path).with_suffix(".x264.mp4")
+        vf = (
+            f"scale={VIDEO_WIDTH}:{VIDEO_HEIGHT}:"
+            f"force_original_aspect_ratio=increase,"
+            f"crop={VIDEO_WIDTH}:{VIDEO_HEIGHT},"
+            f"zoompan=z='{zoom}':x='{x}':y='{y}':"
+            f"d=1:s={VIDEO_WIDTH}x{VIDEO_HEIGHT}:fps={FPS}"
+        )
 
         cmd = [
-
-            "ffmpeg",
-
-            "-y",
-
-            "-i",
-            str(output_path),
-
-            "-c:v", "h264_nvenc",
-
-            "-preset", "p4",
-            
-
-            "-cq", "18",
-
-            "-pix_fmt",
-            "yuv420p",
-
-            "-r",
-            str(FPS),
-
-            "-movflags",
-            "+faststart",
-
+            "ffmpeg", "-y",
+            "-loop", "1",
+            "-i", str(source_image),
+            "-t", f"{duration:.3f}",
+            "-vf", vf,
             "-an",
-
-            str(temp_output)
-
+            "-c:v", "h264_nvenc",
+            "-preset", "p4",
+            "-cq", "18",
+            "-pix_fmt", "yuv420p",
+            "-r", str(FPS),
+            "-movflags", "+faststart",
+            str(output_path),
         ]
 
-        subprocess.run(
-            cmd,
-            check=True
-        )
-
-        Path(output_path).unlink(
-            missing_ok=True
-        )
-
-        temp_output.rename(
+        try:
+            subprocess.run(cmd, check=True)
+        finally:
+            source_image.unlink(missing_ok=True)
             output_path
         )
