@@ -1,23 +1,25 @@
 from pathlib import Path
-import argparse
 
-from config import AUDIO_FILE, IMAGES_DIR, OUTPUT_VIDEO
+from config import HOTELS_DIR, OUTPUT_DIR
+
 from src.utils import ffmpeg_exists, ffprobe_exists, log
 from src.timeline_builder import TimelineBuilder
 from src.renderer import Renderer
 
-HOTELS_FILE = Path("hotels.txt")
+
+TITLE_FILE = Path("input/title.txt")
 
 
-def load_hotels():
-    if not HOTELS_FILE.exists():
-        raise RuntimeError("hotels.txt not found.")
-
+def load_hotel_names():
     hotels = {}
 
-    for raw in HOTELS_FILE.read_text(encoding="utf-8").splitlines():
+    if not TITLE_FILE.exists():
+        raise RuntimeError(f"Title file not found: {TITLE_FILE}")
+
+    for raw in TITLE_FILE.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
-        if not line or line.startswith("#") or "|" not in line:
+
+        if not line or "|" not in line:
             continue
 
         number, name = line.split("|", 1)
@@ -28,80 +30,113 @@ def load_hotels():
             hotels[int(number)] = name
 
     if not hotels:
-        raise RuntimeError("No hotels found in hotels.txt.")
+        raise RuntimeError(f"No hotel names found in {TITLE_FILE}")
 
     return hotels
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--hotel", type=int, default=1)
-    args = parser.parse_args()
-
     if not ffmpeg_exists():
         raise RuntimeError("FFmpeg not found.")
 
     if not ffprobe_exists():
         raise RuntimeError("FFprobe not found.")
 
-    hotels = load_hotels()
-
-    if args.hotel not in hotels:
-        raise RuntimeError(f"Hotel {args.hotel} not found in hotels.txt.")
-
-    hotel_name = hotels[args.hotel]
+    hotels = load_hotel_names()
 
     log("----------------------------------------")
-    log(" Resort Video Maker — Kaggle/GPU")
+    log(" Resort Video Maker - Multi Hotel")
     log("----------------------------------------")
-    log(f"Hotel : NO. {args.hotel} — {hotel_name}")
 
-    if not Path(AUDIO_FILE).exists():
-        raise RuntimeError(f"Audio file not found: {AUDIO_FILE}")
+    hotel_folders = [
+        p for p in HOTELS_DIR.iterdir()
+        if p.is_dir() and p.name.isdigit()
+    ]
 
-    if not Path(IMAGES_DIR).exists():
-        raise RuntimeError(f"Images directory not found: {IMAGES_DIR}")
+    hotel_folders.sort(key=lambda p: int(p.name))
 
-    timeline = TimelineBuilder().build()
+    if not hotel_folders:
+        raise RuntimeError(
+            f"No numbered hotel folders found in {HOTELS_DIR}"
+        )
 
-    if not timeline:
-        raise RuntimeError("Timeline is empty.")
+    for hotel_dir in hotel_folders:
+        hotel_number = int(hotel_dir.name)
 
-    print("\n========== TIMELINE ==========")
-    total = 0.0
+        audio_file = hotel_dir / "voice.mp3"
+        images_dir = hotel_dir / "images"
 
-    for i, item in enumerate(timeline, 1):
-        start = float(item.get("start", 0))
-        duration = float(item["duration"])
-        end = float(item.get("end", start + duration))
-        media_type = item.get("media_type", item.get("type", "image"))
-        total += duration
-        print(f"{i:02d} | {media_type:5} | {start:.3f} -> {end:.3f} | {duration:.3f}")
+        hotel_name = hotels.get(
+            hotel_number,
+            f"Hotel {hotel_number}"
+        )
 
-    print("--------------------------------")
-    print(f"Timeline Total : {total:.3f}")
-    print("================================\n")
+        log("----------------------------------------")
+        log(f"Hotel : NO. {hotel_number} — {hotel_name}")
+        log(f"Voice : {audio_file}")
+        log(f"Images: {images_dir}")
+        log("----------------------------------------")
 
-    output_path = Path(OUTPUT_VIDEO)
-    if output_path.suffix:
+        if not audio_file.exists():
+            log(
+                f"SKIPPED Hotel #{hotel_number}: "
+                f"voice.mp3 missing"
+            )
+            continue
+
+        if not images_dir.exists():
+            log(
+                f"SKIPPED Hotel #{hotel_number}: "
+                f"images folder missing"
+            )
+            continue
+
+        builder = TimelineBuilder(
+            audio_file=audio_file,
+            images_dir=images_dir
+        )
+
+        timeline = builder.build()
+
+        if not timeline:
+            log(
+                f"SKIPPED Hotel #{hotel_number}: "
+                f"timeline empty"
+            )
+            continue
+
         safe_name = "".join(
             c if c.isalnum() or c in " _-" else "_"
             for c in hotel_name
         ).strip().replace(" ", "_")
-        output_path = output_path.parent / f"hotel_{args.hotel}_{safe_name}{output_path.suffix}"
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path = (
+            Path(OUTPUT_DIR)
+            / f"hotel_{hotel_number}_{safe_name}.mp4"
+        )
 
-    Renderer().render(
-        timeline=timeline,
-        audio_file=AUDIO_FILE,
-        output_file=output_path,
-        hotel_number=args.hotel,
-        hotel_name=hotel_name,
-    )
+        output_path.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        Renderer().render(
+            timeline=timeline,
+            audio_file=audio_file,
+            output_file=output_path,
+            hotel_number=hotel_number,
+            hotel_name=hotel_name,
+        )
+
+        log("----------------------------------------")
+        log(
+            f"Hotel #{hotel_number} saved : "
+            f"{output_path}"
+        )
+        log("----------------------------------------")
 
     log("----------------------------------------")
-    log(f"Video saved : {output_path}")
+    log(" ALL HOTELS COMPLETE")
     log("----------------------------------------")
 
 
