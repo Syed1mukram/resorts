@@ -190,5 +190,3 @@ class ImageBuilder:
             subprocess.run(cmd, check=True)
         finally:
             source_image.unlink(missing_ok=True)
-            output_path
-        )
