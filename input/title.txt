@@ -1,2 +1,10 @@
-1|Grand Hotel La Favorita
-2|Cobblers Cove
+1|Piece Lio
+2|The Funny Lion – Puerto Princesa
+3|The Funny Lion El Nido
+4|H Hotel El Nido
+5|Sangat Island Dive Resort
+6|Buko Beach Resort
+7|Discovery Coron
+8|Busuanga Bay Lodge
+9|Four Points by Sheraton Palawan Puerto Princesa
+10|Daluyon Beach and Mountain Resort

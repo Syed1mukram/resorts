@@ -54,6 +54,14 @@ python -u main.py
 
 !python main.py
 
+
+
+%cd /kaggle/working
+
+!git clone --depth 1 https://github.com/Syed1mukram/resorts.git
+
+%cd /kaggle/working/resorts
+
 -------------------
 
 file change :
