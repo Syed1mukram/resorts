@@ -35,29 +35,6 @@ class Renderer:
 
         clips = []
 
-        intro_image = None
-
-        for file in Path("input/images").iterdir():
-
-            if not file.is_file():
-                continue
-
-            if "intro" not in file.stem.lower():
-                continue
-
-            if file.suffix.lower() not in {
-                ".png",
-                ".jpg",
-                ".jpeg",
-                ".webp",
-                ".avif",
-                ".bmp",
-            }:
-                continue
-
-            intro_image = file
-            break
-
         for i, item in enumerate(timeline):
 
             clip = self.temp_dir / f"{i:04d}.mp4"

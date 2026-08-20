@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from config import (
-    AUDIO_FILE,
-    OUTPUT_VIDEO,
+    HOTELS_DIR,
+    OUTPUT_DIR,
 )
 
 from src.utils import (
@@ -24,39 +24,81 @@ def main():
         raise RuntimeError("FFprobe not found.")
 
     log("----------------------------------------")
-    log(" Resort Video Maker")
+    log(" Resort Video Maker - Multi Hotel")
     log("----------------------------------------")
 
-    builder = TimelineBuilder()
+    # Find numbered hotel folders
+    hotel_folders = [
+        p for p in HOTELS_DIR.iterdir()
+        if p.is_dir() and p.name.isdigit()
+    ]
 
-    timeline = builder.build()
+    # Countdown order: 9 -> 1
+    hotel_folders.sort(
+        key=lambda p: int(p.name),
+        reverse=True
+    )
 
-
-    print("\n========== TIMELINE ==========")
-    total = 0.0
-    for i, item in enumerate(timeline):
-        d = float(item["duration"])
-        total += d
-        print(f"{i:02d} | {item['media_type']:5} | {d:.3f}")
-    print(f"\nTOTAL TIMELINE = {total:.3f} sec")
-    print("==============================\n")
-
-    if not timeline:
-        raise RuntimeError("Timeline is empty.")
-
-    output_path = Path(OUTPUT_VIDEO)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if not hotel_folders:
+        raise RuntimeError("No hotel folders found.")
 
     renderer = Renderer()
 
-    renderer.render(
-        timeline=timeline,
-        audio_file=AUDIO_FILE,
-        output_file=output_path
-    )
+    for hotel_dir in hotel_folders:
+
+        hotel_number = hotel_dir.name
+
+        audio_file = hotel_dir / "voice.mp3"
+        images_dir = hotel_dir / "images"
+
+        log("----------------------------------------")
+        log(f" Processing Hotel #{hotel_number}")
+        log(f" Voice  : {audio_file}")
+        log(f" Images : {images_dir}")
+        log("----------------------------------------")
+
+        if not audio_file.exists():
+            log(f"SKIPPED Hotel #{hotel_number}: voice.mp3 missing")
+            continue
+
+        if not images_dir.exists():
+            log(f"SKIPPED Hotel #{hotel_number}: images folder missing")
+            continue
+
+        builder = TimelineBuilder(
+            audio_file=audio_file,
+            images_dir=images_dir
+        )
+
+        timeline = builder.build()
+
+        if not timeline:
+            log(f"SKIPPED Hotel #{hotel_number}: timeline empty")
+            continue
+
+        output_path = (
+            Path(OUTPUT_DIR)
+            / f"hotel_{hotel_number}.mp4"
+        )
+
+        output_path.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        renderer.render(
+            timeline=timeline,
+            audio_file=audio_file,
+            output_file=output_path
+        )
+
+        log(
+            f"Hotel #{hotel_number} saved : "
+            f"{output_path}"
+        )
 
     log("----------------------------------------")
-    log(f"Video saved : {output_path}")
+    log(" ALL HOTELS COMPLETE")
     log("----------------------------------------")
 
 
