@@ -17,10 +17,11 @@ CACHE_DIR = ROOT_DIR / "cache"
 ASSETS_DIR = ROOT_DIR / "assets"
 
 # ==========================================================
-# INPUT
+# INPUT FILES
 # ==========================================================
 
-HOTELS_DIR = INPUT_DIR / "images"
+AUDIO_FILE = INPUT_DIR / "voice.mp3"
+IMAGES_DIR = INPUT_DIR / "images"
 
 # ==========================================================
 # CACHE
@@ -45,15 +46,13 @@ VIDEO_HEIGHT = 1080
 
 FPS = 30
 
-# KAGGLE / CPU
-VIDEO_CODEC = "libx264"
-
+VIDEO_CODEC = "h264_nvenc"
 AUDIO_CODEC = "aac"
 
 PIXEL_FORMAT = "yuv420p"
 
 PRESET = "medium"
-CRF = 22
+CRF = 18
 
 # ==========================================================
 # IMAGE
@@ -100,7 +99,7 @@ MIN_SCENE_DURATION = 10.0
 IMAGE_RATIO = 0.70
 
 # ==========================================================
-# CACHE
+# CACHE OPTIONS
 # ==========================================================
 
 USE_CACHE = True
@@ -116,6 +115,6 @@ for folder in (
     STOCK_DIR,
     TEMP_DIR,
     ENHANCED_DIR,
-    HOTELS_DIR,
+    IMAGES_DIR,
 ):
     folder.mkdir(parents=True, exist_ok=True)

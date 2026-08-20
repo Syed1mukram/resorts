@@ -1,12 +1,13 @@
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from collections import deque
 
+from config import AUDIO_FILE, IMAGES_DIR
 from src.utils import log
 from src.transcript import TranscriptGenerator
 from src.image_matcher import ImageMatcher
 from src.pexels_api import PexelsAPI
 
-VIDEO_RATIO = 0.40
+VIDEO_RATIO = 0.30
 
 VIDEO_KEYWORDS = {
     "beach","ocean","sea","waves","coast","coastline","shore","drone","aerial",
@@ -24,11 +25,8 @@ IMAGE_KEYWORDS = {
 
 class TimelineBuilder:
 
-    def __init__(self, audio_file, images_dir):
+    def __init__(self):
         from src.scene_analyzer import SceneAnalyzer
-
-        self.audio_file = audio_file
-        self.images_dir = images_dir
 
         self.scene = SceneAnalyzer()
         self.transcript = TranscriptGenerator()
@@ -45,10 +43,10 @@ class TimelineBuilder:
     def build(self):
 
         log("Generating transcript...")
-        segments = self.transcript.transcribe(self.audio_file)
+        segments = self.transcript.transcribe(AUDIO_FILE)
 
         log("Indexing images...")
-        self.matcher.index_images(self.images_dir)
+        self.matcher.index_images(IMAGES_DIR)
 
         timeline = []
 
@@ -57,7 +55,7 @@ class TimelineBuilder:
 
         max_videos = max(1, int(len(segments) * VIDEO_RATIO))
 
-        with AudioFileClip(str(self.audio_file)) as audio:
+        with AudioFileClip(str(AUDIO_FILE)) as audio:
             transcript_end = audio.duration
 
         for i, seg in enumerate(segments):

@@ -4,6 +4,8 @@ hotel folder delete karo
 !mkdir /content/hotels
 
 ---------
+
+
 Zip Folder Delete
 
 !rm -rf /content/upscaled
@@ -16,16 +18,12 @@ Zip Folder Delete
 
 Left sidebar → Files → /content → Upload → hotels.zip
 
-!pip install -q realesrgan
-
 -----------------
 
 3. Extract ZIP
 
 !unzip -q /content/hotels.zip -d /content/
 
-
-!pip install -U --force-reinstall torchvision==0.20.1 torch==2.5.1
 
 -----------------
 
@@ -63,7 +61,7 @@ for hotel in os.listdir(INPUT_ROOT):
         if img is None:
             continue
 
-        output, _ = upsampler.enhance(img, outscale=2)
+        output, _ = upsampler.enhance(img, outscale=4)
 
         if len(output.shape) == 3 and output.shape[2] == 4:
             output = cv2.cvtColor(output, cv2.COLOR_BGRA2BGR)

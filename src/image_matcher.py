@@ -6,6 +6,7 @@ import torch
 import open_clip
 from PIL import Image
 
+from config import IMAGES_DIR
 from src.utils import (
     get_images,
     log,
@@ -46,9 +47,6 @@ class ImageMatcher:
         self.image_data = []
 
         # Prevent recent duplicates
-        
-        self.current_image_folder = None
-
         self.recent_images = deque(
             maxlen=15
         )
@@ -64,8 +62,6 @@ class ImageMatcher:
         self,
         image_folder: Path
     ):
-
-        self.current_image_folder = Path(image_folder)
 
         self.image_data.clear()
         self.recent_images.clear()
@@ -240,7 +236,7 @@ class ImageMatcher:
         intro_image = None
 
         for ext in [".avif", ".webp", ".jpg", ".jpeg", ".png"]:
-            p = self.current_image_folder / f"intro{ext}"
+            p = IMAGES_DIR / f"intro{ext}"
             if p.exists():
                 intro_image = p
                 break

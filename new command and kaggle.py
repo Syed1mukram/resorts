@@ -29,7 +29,7 @@ git add input
 git commit -m "New hotel"
 git push
 
-2:37 minute to 2:43 minute command : 2:44- 3:17 kaggle time
+
 
 %%bash
 pip install -q faster-whisper ctranslate2 open-clip-torch python-dotenv
@@ -53,14 +53,6 @@ python -u main.py
 %cd resorts
 
 !python main.py
-
-
-
-%cd /kaggle/working
-
-!git clone --depth 1 https://github.com/Syed1mukram/resorts.git
-
-%cd /kaggle/working/resorts
 
 -------------------
 
