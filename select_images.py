@@ -7,11 +7,9 @@ from src.image_matcher import ImageMatcher
 
 BASE_DIR = Path("input/images")
 
-# Minimum CLIP similarity required.
 MIN_SCORE = 0.18
-
-# Don't keep the same image for every nearby segment
-RECENT_WINDOW = 3
+SAME_IMAGE_THRESHOLD = 0.08
+RECENT_WINDOW = 2
 
 
 def find_hotels():
@@ -48,32 +46,22 @@ def select_hotel(hotel_dir):
     print(f"HOTEL {hotel_dir.name}")
     print("=" * 60)
 
-    # ---------------------------------------------------------
-    # TRANSCRIPT
-    # ---------------------------------------------------------
-
     print("\n[1/3] Generating transcript...")
 
     transcript = TranscriptGenerator()
     segments = transcript.transcribe(voice_file)
-
-    # ---------------------------------------------------------
-    # CLIP
-    # ---------------------------------------------------------
 
     print("\n[2/3] Indexing images...")
 
     matcher = ImageMatcher()
     matcher.index_images(images_dir)
 
-    # ---------------------------------------------------------
-    # SELECTION
-    # ---------------------------------------------------------
-
     print("\n[3/3] Selecting useful images...\n")
 
     selected = OrderedDict()
     recent_images = []
+    last_image = None
+    last_score = 0.0
 
     for segment in segments:
 
@@ -92,7 +80,6 @@ def select_hotel(hotel_dir):
         image_path = Path(image_path)
         score = float(score)
 
-        # Weak match = don't force an image
         if score < MIN_SCORE:
             print(
                 f"SKIP WEAK | {image_path.name} "
@@ -100,24 +87,48 @@ def select_hotel(hotel_dir):
             )
             continue
 
-        # Don't repeatedly use the same image in nearby segments
-        if image_path in recent_images:
-
-            # If the image was already selected, don't create
-            # another entry for it.
+        # Same image can continue naturally
+        if image_path == last_image:
             print(
-                f"REUSE | {image_path.name} "
+                f"CONTINUE | {image_path.name} "
                 f"| {score:.3f} | {text}"
             )
             continue
 
-        # New useful image
+        # Avoid unnecessary image changes when the new match
+        # is only slightly better than the current image.
+        if last_image is not None:
+            score_difference = score - last_score
+
+            if (
+                score_difference < SAME_IMAGE_THRESHOLD
+                and last_image not in recent_images
+            ):
+                print(
+                    f"KEEP | {last_image.name} "
+                    f"| current={score:.3f} "
+                    f"| previous={last_score:.3f} "
+                    f"| {text}"
+                )
+                continue
+
+        # Avoid immediate repetition
+        if image_path in recent_images:
+            print(
+                f"SKIP RECENT | {image_path.name} "
+                f"| {score:.3f} | {text}"
+            )
+            continue
+
         selected[image_path] = {
             "score": score,
             "text": text,
             "start": float(segment["start"]),
             "end": float(segment["end"]),
         }
+
+        last_image = image_path
+        last_score = score
 
         recent_images.append(image_path)
 
@@ -130,10 +141,6 @@ def select_hotel(hotel_dir):
             f"| {score:.3f} "
             f"| {text}"
         )
-
-    # ---------------------------------------------------------
-    # SAVE
-    # ---------------------------------------------------------
 
     output_file = Path(
         f"selected_images_{hotel_dir.name}.txt"
@@ -148,7 +155,6 @@ def select_hotel(hotel_dir):
             selected.items(),
             start=1
         ):
-
             f.write(
                 f"{number:02d} | "
                 f"{image.name} | "
@@ -158,12 +164,8 @@ def select_hotel(hotel_dir):
             )
 
     print("\n----------------------------------------")
-    print(
-        f"Selected images : {len(selected)}"
-    )
-    print(
-        f"Saved           : {output_file}"
-    )
+    print(f"Selected images : {len(selected)}")
+    print(f"Saved           : {output_file}")
     print("----------------------------------------")
 
 
@@ -172,13 +174,9 @@ def main():
     hotels = find_hotels()
 
     if not hotels:
-        raise RuntimeError(
-            "No hotel folders found."
-        )
+        raise RuntimeError("No hotel folders found.")
 
-    print(
-        f"Found {len(hotels)} hotel(s)."
-    )
+    print(f"Found {len(hotels)} hotel(s).")
 
     for hotel in hotels:
         select_hotel(hotel)
