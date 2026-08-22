@@ -81,17 +81,11 @@ class Renderer:
     def render(
 
         self,
-
         timeline,
-
         audio_file,
-
-        hotel_number=None,
-
-        test_duration=None,
-
         output_file,
-
+        hotel_number=None,
+        test_duration=None,
     ):
 
         self._clean()
