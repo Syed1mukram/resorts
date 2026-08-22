@@ -75,3 +75,18 @@ git push
 
 
 git git add src/upscale_images.py
+
+
+--- NEW
+
+
+git add .
+git commit -m "New hotel"
+git push
+
+
+%cd /kaggle/working
+!rm -rf resorts
+!git clone --depth 1 https://github.com/Syed1mukram/resorts.git
+%cd /kaggle/working/resorts
+!python main.py
