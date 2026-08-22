@@ -1,35 +1,68 @@
 from pathlib import Path
 from collections import OrderedDict
 
-from config import AUDIO_FILE, IMAGES_DIR
 from src.transcript import TranscriptGenerator
 from src.image_matcher import ImageMatcher
 
 
-OUTPUT_FILE = Path("selected_images.txt")
+BASE_DIR = Path("input/images")
 
 
-def main():
-    print("----------------------------------------")
-    print(" IMAGE SELECTION ONLY")
-    print("----------------------------------------")
+def find_hotels():
+    hotels = []
 
-    # 1. Transcribe narration
+    if not BASE_DIR.exists():
+        raise RuntimeError(f"Missing folder: {BASE_DIR}")
+
+    for folder in BASE_DIR.iterdir():
+        if not folder.is_dir():
+            continue
+
+        voice = folder / "voice.mp3"
+        images = folder / "images"
+
+        if voice.exists() and images.exists():
+            hotels.append(folder)
+
+    return sorted(hotels, key=lambda x: int(x.name) if x.name.isdigit() else x.name)
+
+
+def select_hotel(hotel_dir):
+    voice_file = hotel_dir / "voice.mp3"
+    images_dir = hotel_dir / "images"
+
+    print("\n" + "=" * 60)
+    print(f"HOTEL {hotel_dir.name}")
+    print("=" * 60)
+
+    # ---------------------------------------------------------
+    # TRANSCRIPT
+    # ---------------------------------------------------------
+
     print("\n[1/3] Generating transcript...")
+
     transcript = TranscriptGenerator()
-    segments = transcript.transcribe(AUDIO_FILE)
+    segments = transcript.transcribe(voice_file)
 
-    # 2. Load the SAME CLIP image matcher
+    # ---------------------------------------------------------
+    # CLIP
+    # ---------------------------------------------------------
+
     print("\n[2/3] Indexing images...")
-    matcher = ImageMatcher()
-    matcher.index_images(IMAGES_DIR)
 
-    # Keep unique images while preserving first-use order
+    matcher = ImageMatcher()
+    matcher.index_images(images_dir)
+
+    # ---------------------------------------------------------
+    # SELECT
+    # ---------------------------------------------------------
+
+    print("\n[3/3] Selecting images...")
+
     selected = OrderedDict()
 
-    print("\n[3/3] Selecting images...\n")
+    for segment in segments:
 
-    for i, segment in enumerate(segments):
         text = segment["text"].strip()
 
         if not text:
@@ -40,43 +73,85 @@ def main():
         if not result:
             continue
 
-        image, score = result
+        image_path, score = result
 
-        if image is None:
-            continue
+        image_path = Path(image_path)
 
-        image = Path(image)
+        # Unique images only
+        if image_path not in selected:
 
-        if image not in selected:
-            selected[image] = {
+            selected[image_path] = {
                 "score": float(score),
                 "text": text,
+                "start": float(segment["start"]),
+                "end": float(segment["end"]),
             }
 
             print(
                 f"{len(selected):02d}. "
-                f"{image.name} "
-                f"(score={float(score):.3f})"
+                f"{image_path.name} "
+                f"| {float(score):.3f} "
+                f"| {text}"
             )
 
-    # Save selected filenames
-    with OUTPUT_FILE.open("w", encoding="utf-8") as f:
-        f.write("SELECTED IMAGES\n")
-        f.write("=" * 60 + "\n\n")
+    # ---------------------------------------------------------
+    # SAVE
+    # ---------------------------------------------------------
+
+    output_file = Path(
+        f"selected_images_{hotel_dir.name}.txt"
+    )
+
+    with output_file.open("w", encoding="utf-8") as f:
+
+        f.write(
+            f"HOTEL {hotel_dir.name}\n"
+        )
+
+        f.write("=" * 70 + "\n\n")
 
         for number, (image, data) in enumerate(
-            selected.items(), start=1
+            selected.items(),
+            start=1
         ):
+
             f.write(
                 f"{number:02d} | "
                 f"{image.name} | "
-                f"score={data['score']:.3f}\n"
+                f"score={data['score']:.3f} | "
+                f"{data['start']:.2f}-{data['end']:.2f} | "
+                f"{data['text']}\n"
             )
 
     print("\n----------------------------------------")
-    print(f"Total unique images selected : {len(selected)}")
-    print(f"Saved list                    : {OUTPUT_FILE}")
+    print(
+        f"Selected unique images : {len(selected)}"
+    )
+    print(
+        f"Saved                  : {output_file}"
+    )
     print("----------------------------------------")
+
+
+def main():
+
+    hotels = find_hotels()
+
+    if not hotels:
+        raise RuntimeError(
+            "No hotel folders found."
+        )
+
+    print(
+        f"Found {len(hotels)} hotel(s)."
+    )
+
+    for hotel in hotels:
+        select_hotel(hotel)
+
+    print("\n========================================")
+    print("IMAGE SELECTION COMPLETE")
+    print("========================================")
 
 
 if __name__ == "__main__":
