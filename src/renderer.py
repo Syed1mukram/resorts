@@ -129,20 +129,28 @@ class Renderer:
             )
 
         title_filter = (
-            "drawbox=x=w-330:y=h-220:w=8:h=170:"
+            # Small black background behind the complete title
+            "drawbox=x=55:y=h-245:w=620:h=205:"
+            "color=black@0.58:t=fill:"
+            "enable='between(t,0,5)',"
+
+            # Blue vertical line
+            "drawbox=x=75:y=h-225:w=8:h=165:"
             "color=00AEEF:t=fill:"
             "enable='between(t,0,5)',"
 
+            # NO. 1
             f"drawtext=fontfile='{font}':"
             f"text='NO. {esc(hotel_number or '')}':"
-            "x=w-tw-90:y=h-215:fontsize=48:"
+            "x=110:y=h-215:fontsize=48:"
             "fontcolor=white:"
             "enable='between(t,0,5)':"
             "alpha='if(lt(t,0.35),t/0.35,if(gt(t,4.5),(5-t)/0.5,1))',"
 
+            # HOTEL NAME - extra bold and larger
             f"drawtext=fontfile='{font}':"
             f"text='{esc(hotel_name.upper())}':"
-            "x=w-tw-90:y=h-145:fontsize=62:"
+            "x=110:y=h-145:fontsize=62:"
             "fontcolor=FFD21F:"
             "enable='between(t,0,5)':"
             "alpha='if(lt(t,0.35),t/0.35,if(gt(t,4.5),(5-t)/0.5,1))'"
