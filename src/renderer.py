@@ -129,18 +129,20 @@ class Renderer:
             )
 
         title_filter = (
-            "drawbox=x=70:y=410:w=8:h=190:"
+            "drawbox=x=w-330:y=h-220:w=8:h=170:"
             "color=00AEEF:t=fill:"
             "enable='between(t,0,5)',"
+
             f"drawtext=fontfile='{font}':"
             f"text='NO. {esc(hotel_number or '')}':"
-            "x=110:y=410:fontsize=48:"
+            "x=w-tw-90:y=h-215:fontsize=48:"
             "fontcolor=white:"
             "enable='between(t,0,5)':"
             "alpha='if(lt(t,0.35),t/0.35,if(gt(t,4.5),(5-t)/0.5,1))',"
+
             f"drawtext=fontfile='{font}':"
             f"text='{esc(hotel_name.upper())}':"
-            "x=110:y=485:fontsize=52:"
+            "x=w-tw-90:y=h-145:fontsize=62:"
             "fontcolor=FFD21F:"
             "enable='between(t,0,5)':"
             "alpha='if(lt(t,0.35),t/0.35,if(gt(t,4.5),(5-t)/0.5,1))'"
