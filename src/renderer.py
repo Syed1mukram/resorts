@@ -86,6 +86,10 @@ class Renderer:
 
         audio_file,
 
+        hotel_number=None,
+
+        test_duration=None,
+
         output_file,
 
     ):
@@ -107,11 +111,13 @@ class Renderer:
         # Optional 5-second hotel title
         # ---------------------------------------------------------
         title_file = Path(audio_file).parent.parent.parent / "title.txt"
-        hotel_name = (
-            title_file.read_text(encoding="utf-8").strip()
-            if title_file.exists()
-            else f"Hotel {hotel_number or ''}".strip()
-        )
+
+        raw_title = title_file.read_text(encoding="utf-8").strip()
+        
+        if "|" in raw_title:
+            hotel_name = raw_title.split("|", 1)[1].strip()
+        else:
+            hotel_name = raw_title
 
         if test_duration is not None:
             # Keep only the requested test duration.
