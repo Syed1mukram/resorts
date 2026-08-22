@@ -7,6 +7,12 @@ from src.image_matcher import ImageMatcher
 
 BASE_DIR = Path("input/images")
 
+# Minimum CLIP similarity required.
+MIN_SCORE = 0.18
+
+# Don't keep the same image for every nearby segment
+RECENT_WINDOW = 3
+
 
 def find_hotels():
     hotels = []
@@ -24,10 +30,17 @@ def find_hotels():
         if voice.exists() and images.exists():
             hotels.append(folder)
 
-    return sorted(hotels, key=lambda x: int(x.name) if x.name.isdigit() else x.name)
+    def sort_key(path):
+        try:
+            return (0, int(path.name))
+        except ValueError:
+            return (1, path.name.lower())
+
+    return sorted(hotels, key=sort_key)
 
 
 def select_hotel(hotel_dir):
+
     voice_file = hotel_dir / "voice.mp3"
     images_dir = hotel_dir / "images"
 
@@ -54,12 +67,13 @@ def select_hotel(hotel_dir):
     matcher.index_images(images_dir)
 
     # ---------------------------------------------------------
-    # SELECT
+    # SELECTION
     # ---------------------------------------------------------
 
-    print("\n[3/3] Selecting images...")
+    print("\n[3/3] Selecting useful images...\n")
 
     selected = OrderedDict()
+    recent_images = []
 
     for segment in segments:
 
@@ -71,28 +85,51 @@ def select_hotel(hotel_dir):
         result = matcher.find_best(text)
 
         if not result:
+            print(f"SKIP | {text}")
             continue
 
         image_path, score = result
-
         image_path = Path(image_path)
+        score = float(score)
 
-        # Unique images only
-        if image_path not in selected:
-
-            selected[image_path] = {
-                "score": float(score),
-                "text": text,
-                "start": float(segment["start"]),
-                "end": float(segment["end"]),
-            }
-
+        # Weak match = don't force an image
+        if score < MIN_SCORE:
             print(
-                f"{len(selected):02d}. "
-                f"{image_path.name} "
-                f"| {float(score):.3f} "
-                f"| {text}"
+                f"SKIP WEAK | {image_path.name} "
+                f"| {score:.3f} | {text}"
             )
+            continue
+
+        # Don't repeatedly use the same image in nearby segments
+        if image_path in recent_images:
+
+            # If the image was already selected, don't create
+            # another entry for it.
+            print(
+                f"REUSE | {image_path.name} "
+                f"| {score:.3f} | {text}"
+            )
+            continue
+
+        # New useful image
+        selected[image_path] = {
+            "score": score,
+            "text": text,
+            "start": float(segment["start"]),
+            "end": float(segment["end"]),
+        }
+
+        recent_images.append(image_path)
+
+        if len(recent_images) > RECENT_WINDOW:
+            recent_images.pop(0)
+
+        print(
+            f"{len(selected):02d}. "
+            f"{image_path.name} "
+            f"| {score:.3f} "
+            f"| {text}"
+        )
 
     # ---------------------------------------------------------
     # SAVE
@@ -104,10 +141,7 @@ def select_hotel(hotel_dir):
 
     with output_file.open("w", encoding="utf-8") as f:
 
-        f.write(
-            f"HOTEL {hotel_dir.name}\n"
-        )
-
+        f.write(f"HOTEL {hotel_dir.name}\n")
         f.write("=" * 70 + "\n\n")
 
         for number, (image, data) in enumerate(
@@ -125,10 +159,10 @@ def select_hotel(hotel_dir):
 
     print("\n----------------------------------------")
     print(
-        f"Selected unique images : {len(selected)}"
+        f"Selected images : {len(selected)}"
     )
     print(
-        f"Saved                  : {output_file}"
+        f"Saved           : {output_file}"
     )
     print("----------------------------------------")
 
