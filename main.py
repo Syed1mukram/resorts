@@ -89,7 +89,9 @@ def main():
         renderer.render(
             timeline=timeline,
             audio_file=audio_file,
-            output_file=output_path
+            output_file=output_path,
+            hotel_number=hotel_number,
+            test_duration=10
         )
 
         log(
