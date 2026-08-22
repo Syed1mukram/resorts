@@ -106,7 +106,7 @@ class Renderer:
         # ---------------------------------------------------------
         # Optional 5-second hotel title
         # ---------------------------------------------------------
-        title_file = Path(audio_file).parent / "title.txt"
+        title_file = Path(audio_file).parent.parent.parent / "title.txt"
         hotel_name = (
             title_file.read_text(encoding="utf-8").strip()
             if title_file.exists()
