@@ -4,6 +4,7 @@ import subprocess
 
 from src.image_builder import ImageBuilder
 from src.video_builder import VideoBuilder
+from src.scene_overlay import get_overlay
 
 
 class Renderer:
@@ -97,6 +98,18 @@ class Renderer:
         concat = self._concat_file(clips)
 
         output_file = Path(output_file)
+
+        # Read hotel number/name automatically from the current hotel folder.
+        hotel_dir = Path(audio_file).parent
+        hotel_number = hotel_dir.name
+
+        title_file = hotel_dir / "title.txt"
+        if title_file.exists():
+            hotel_name = title_file.read_text(
+                encoding="utf-8"
+            ).strip()
+        else:
+            hotel_name = f"Hotel {hotel_number}"
 
         output_file.parent.mkdir(
             parents=True,
